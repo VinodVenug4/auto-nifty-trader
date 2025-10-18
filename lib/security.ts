@@ -10,7 +10,7 @@ if (Platform.OS !== 'web') {
     console.warn('LocalAuthentication not available');
   }
 }
-import { logger } from './logger';
+import { logger } from './logger.ts';
 
 export class SecurityManager {
   private static instance: SecurityManager;
@@ -58,8 +58,20 @@ export class SecurityManager {
       // Web fallback
       if (Platform.OS === 'web' || !LocalAuthentication) {
         return new Promise((resolve) => {
-          const confirmed = window.confirm('Authenticate to access Auto NIFTY Trader');
-          resolve(confirmed);
+          if (Platform.OS === 'web' && typeof window !== 'undefined') {
+            const confirmed = window.confirm('Authenticate to access Auto NIFTY Trader');
+            resolve(confirmed);
+          } else {
+            // Use Alert for non-web platforms
+            Alert.alert(
+              'Authentication Required',
+              'Authenticate to access Auto NIFTY Trader',
+              [
+                { text: 'Cancel', onPress: () => resolve(false) },
+                { text: 'Confirm', onPress: () => resolve(true) }
+              ]
+            );
+          }
         });
       }
       

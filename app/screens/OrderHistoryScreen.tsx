@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Button, StatusBadge } from '../../lib/ui';
-import { PaperTradingAPI, PaperTrade } from '../../lib/PaperTradingAPI';
+import { Text, Card, Button, StatusBadge } from '../../lib/ui.tsx';
+import { PaperTradingAPI, PaperTrade } from '../../lib/PaperTradingAPI.ts';
 
 interface OrderHistoryScreenProps {
   paperTradingApi: PaperTradingAPI;

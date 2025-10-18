@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Button } from '../lib/ui';
-import { FyersAPI } from '../lib/fyersApi';
-import { StrategyManager } from '../lib/StrategyManager';
-import { DashboardScreen } from './screens/DashboardScreen';
-import { StrategiesScreen } from './screens/StrategiesScreen';
-import { PortfolioScreen } from './screens/PortfolioScreen';
-import { SecureConfig } from '../lib/config';
-import { PaperTradingAPI } from '../lib/PaperTradingAPI';
-import { PositionsScreen } from './screens/PositionsScreen';
-import { OrderHistoryScreen } from './screens/OrderHistoryScreen';
-import { RealPortfolioScreen } from './screens/RealPortfolioScreen';
-import { RealOrderHistoryScreen } from './screens/RealOrderHistoryScreen';
-import { SettingsScreen } from './screens/SettingsScreen';
-import { OptionChainScreen } from './screens/OptionChainScreen';
-import { StorageManager } from '../lib/storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, Button } from '../lib/ui.tsx';
+import { FyersAPI } from '../lib/fyersApi.ts';
+import { StrategyManager } from '../lib/StrategyManager.ts';
+import { DashboardScreen } from './screens/DashboardScreen.tsx';
+import { StrategiesScreen } from './screens/StrategiesScreen.tsx';
+import { PortfolioScreen } from './screens/PortfolioScreen.tsx';
+import { SecureConfig } from '../lib/config.ts';
+import { PaperTradingAPI } from '../lib/PaperTradingAPI.ts';
+import { PositionsScreen } from './screens/PositionsScreen.tsx';
+import { OrderHistoryScreen } from './screens/OrderHistoryScreen.tsx';
+import { RealPortfolioScreen } from './screens/RealPortfolioScreen.tsx';
+import { RealOrderHistoryScreen } from './screens/RealOrderHistoryScreen.tsx';
+import { SettingsScreen } from './screens/SettingsScreen.tsx';
+import { OptionChainScreen } from './screens/OptionChainScreen.tsx';
+import { StorageManager } from '../lib/storage.ts';
 
 type Screen = 'dashboard' | 'strategies' | 'portfolio' | 'positions' | 'orders' | 'options' | 'settings';
 
@@ -24,6 +25,7 @@ interface MainAppProps {
 
 export function MainApp({ onLogout }: MainAppProps) {
   const storage = StorageManager.getInstance();
+  const insets = useSafeAreaInsets();
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => storage.getLastScreen() as Screen);
   const [fyersApi, setFyersApi] = useState<FyersAPI | null>(null);
   const [strategyManager, setStrategyManager] = useState<StrategyManager | null>(null);
@@ -62,27 +64,55 @@ export function MainApp({ onLogout }: MainAppProps) {
         const token = await getStoredToken();
         if (token) {
           api.setAccessToken(token);
-          setFyersApi(api);
-          
-          const paperApi = new PaperTradingAPI(api);
-          setPaperTradingApi(paperApi);
-          
-          // Use paper or real API based on mode
-          const tradingApi = isPaperMode ? paperApi : api;
-          const manager = new StrategyManager(tradingApi);
-          setStrategyManager(manager);
         }
+        setFyersApi(api);
+        
+        const paperApi = new PaperTradingAPI(api);
+        setPaperTradingApi(paperApi);
+        
+        // Use paper or real API based on mode
+        const tradingApi = isPaperMode ? paperApi : api;
+        const manager = new StrategyManager(tradingApi);
+        setStrategyManager(manager);
+      } else {
+        // No credentials, still initialize with dummy API for paper mode
+        const dummyConfig = { appId: '', secretKey: '', redirectUri: '' };
+        const api = new FyersAPI(dummyConfig);
+        setFyersApi(api);
+        
+        const paperApi = new PaperTradingAPI(api);
+        setPaperTradingApi(paperApi);
+        
+        const manager = new StrategyManager(paperApi);
+        setStrategyManager(manager);
       }
     } catch (error) {
       console.error('App initialization failed:', error);
+      // Initialize with dummy values to prevent stuck loading
+      const dummyConfig = { appId: '', secretKey: '', redirectUri: '' };
+      const api = new FyersAPI(dummyConfig);
+      setFyersApi(api);
+      
+      const paperApi = new PaperTradingAPI(api);
+      setPaperTradingApi(paperApi);
+      
+      const manager = new StrategyManager(paperApi);
+      setStrategyManager(manager);
     }
   };
 
   const getStoredToken = async (): Promise<string | null> => {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('fyers_token');
+    try {
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem('fyers_token');
+      }
+      // For React Native, use AsyncStorage or SecureStore
+      const { getItemAsync } = require('expo-secure-store');
+      return await getItemAsync('fyers_token');
+    } catch (error) {
+      console.log('No stored token found');
+      return null;
     }
-    return null;
   };
 
   const renderScreen = () => {
@@ -100,6 +130,7 @@ export function MainApp({ onLogout }: MainAppProps) {
           fyersApi={fyersApi} 
           strategyManager={strategyManager} 
           onNavigate={handleScreenChange}
+          isPaperMode={isPaperMode}
         />;
       case 'strategies':
         return <StrategiesScreen strategyManager={strategyManager} fyersApi={fyersApi} />;
@@ -135,7 +166,7 @@ export function MainApp({ onLogout }: MainAppProps) {
         {renderScreen()}
       </View>
       
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, 8) }]}>
         <Button
           title="Dashboard"
           onPress={() => handleScreenChange('dashboard')}
@@ -194,6 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E1E1E',
     paddingVertical: 8,
     paddingHorizontal: 4,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: '#333333',
   },

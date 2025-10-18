@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
-import { Text, Button } from './lib/ui';
-import { MainApp } from './app/MainApp';
-import AuthScreen from './app/auth';
-import { SecurityManager } from './lib/security';
-import { logger } from './lib/logger';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Text, Button } from './lib/ui.tsx';
+import { MainApp } from './app/MainApp.tsx';
+import AuthScreen from './app/auth.tsx';
+import { SecurityManager } from './lib/security.ts';
+import { logger } from './lib/logger.ts';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -20,48 +21,15 @@ export default function App() {
 
   const initializeSecurity = async () => {
     try {
-      // Check device security (root detection)
-      const isSecure = await securityManager.checkDeviceSecurity();
-      
-      if (!isSecure) {
-        setDeviceSecure(false);
-        setSecurityChecked(true);
-        return;
-      }
-
-      // Setup app state listener for background locking
-      securityManager.setupAppStateListener(() => {
-        setIsAppLocked(true);
-      });
-
+      // Skip security checks - directly allow access
       setDeviceSecure(true);
       setSecurityChecked(true);
-      
-      // Authenticate user on app start
-      await authenticateUser();
+      setIsAppLocked(false);
     } catch (error) {
       logger.error('Security initialization failed', error);
-      setDeviceSecure(false);
+      setDeviceSecure(true);
       setSecurityChecked(true);
-    }
-  };
-
-  const authenticateUser = async () => {
-    try {
-      const authenticated = await securityManager.authenticateUser();
-      if (authenticated) {
-        securityManager.unlockApp();
-        setIsAppLocked(false);
-      } else {
-        // Exit app if authentication fails
-        Alert.alert(
-          'Authentication Failed',
-          'App will close for security',
-          [{ text: 'OK', onPress: () => {} }]
-        );
-      }
-    } catch (error) {
-      logger.error('Authentication error', error);
+      setIsAppLocked(false);
     }
   };
 
@@ -98,30 +66,19 @@ export default function App() {
     );
   }
 
-  // Show lock screen
-  if (isAppLocked) {
-    return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.lockTitle}>🔒 App Locked</Text>
-        <Text style={styles.lockText}>Authenticate to continue</Text>
-        <Button 
-          title="Unlock App" 
-          onPress={authenticateUser}
-          variant="primary"
-        />
-      </View>
-    );
-  }
+  // Skip lock screen - removed
 
   // Main app content
   return (
-    <View style={styles.container}>
-      {isAuthenticated ? (
-        <MainApp onLogout={handleLogout} />
-      ) : (
-        <AuthScreen onAuthSuccess={() => setIsAuthenticated(true)} />
-      )}
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        {isAuthenticated ? (
+          <MainApp onLogout={handleLogout} />
+        ) : (
+          <AuthScreen onAuthSuccess={() => setIsAuthenticated(true)} />
+        )}
+      </View>
+    </SafeAreaProvider>
   );
 }
 

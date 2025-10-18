@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Button, StatusBadge } from '../../lib/ui';
-import { BaseStrategy } from '../../lib/strategies/BaseStrategy';
+import { Text, Card, Button, StatusBadge } from '../../lib/ui.tsx';
+import { BaseStrategy } from '../../lib/strategies/BaseStrategy.ts';
 
 interface StrategyDetailsScreenProps {
   strategy: BaseStrategy;

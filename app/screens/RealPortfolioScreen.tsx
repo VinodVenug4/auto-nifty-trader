@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Card, Button, StatusBadge } from '../../lib/ui';
-import { FyersAPI } from '../../lib/fyersApi';
+import { Text, Card, Button, StatusBadge } from '../../lib/ui.tsx';
+import { FyersAPI } from '../../lib/fyersApi.ts';
 
 interface RealPortfolioScreenProps {
   fyersApi: FyersAPI;

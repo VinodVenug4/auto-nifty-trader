@@ -167,9 +167,6 @@ export class AutoAuth {
 
   // Cleanup
   cleanup() {
-    if (Platform.OS !== 'web') {
-      Linking.removeAllListeners('url');
-    }
     this.authCallback = null;
   }
 }

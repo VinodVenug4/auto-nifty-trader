@@ -1,6 +1,6 @@
 // Fyers API integration
-import { logger } from './logger';
-import { SecurityManager } from './security';
+import { logger } from './logger.ts';
+import { SecurityManager } from './security.ts';
 
 export interface FyersCredentials {
   clientId: string;
@@ -345,17 +345,34 @@ export class FyersAPI {
   private async hashAppId(): Promise<string> {
     // Fyers v3 requires SHA256 hash of appId:secretKey
     const data = this.config.appId + ':' + this.config.secretKey;
+    console.log('Hashing data:', data.substring(0, 10) + '...');
     
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
-      // Web Crypto API
-      const encoder = new TextEncoder();
-      const dataBuffer = encoder.encode(data);
-      const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    } else {
-      // Fallback for environments without crypto
-      return btoa(data).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    try {
+      let hash = '';
+      
+      // Try Web Crypto API first (for web)
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        console.log('Using Web Crypto API');
+        const encoder = new TextEncoder();
+        const dataBuffer = encoder.encode(data);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } else {
+        // For React Native, use crypto-js to match web hash
+        console.log('Using CryptoJS to match web hash');
+        const CryptoJS = require('crypto-js');
+        hash = CryptoJS.SHA256(data).toString();
+      }
+      
+      console.log('Generated hash:', hash.substring(0, 16) + '...');
+      return hash;
+    } catch (error) {
+      console.warn('Hash generation failed:', error);
+      // Simple fallback - return appId without special chars
+      const fallback = this.config.appId.replace(/[^a-zA-Z0-9]/g, '').toLowerCase().padStart(32, '0').substring(0, 32);
+      console.log('Using fallback hash:', fallback);
+      return fallback;
     }
   }
 

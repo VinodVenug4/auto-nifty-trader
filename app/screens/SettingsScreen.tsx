@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { Text, Card, Button, Switch } from '../../lib/ui';
+import { Text, Card, Button, Switch } from '../../lib/ui.tsx';
 
 interface SettingsScreenProps {
   onLogout: () => void;

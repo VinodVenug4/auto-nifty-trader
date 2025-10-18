@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Button } from '../../lib/ui';
+import { Text, Card, Button } from '../../lib/ui.tsx';
 
 interface StrategyBrowserScreenProps {
   onBack: () => void;

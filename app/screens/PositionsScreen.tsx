@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Card, Button, StatusBadge } from '../../lib/ui';
-import { PaperTradingAPI, PaperPosition } from '../../lib/PaperTradingAPI';
+import { Text, Card, Button, StatusBadge } from '../../lib/ui.tsx';
+import { PaperTradingAPI, PaperPosition } from '../../lib/PaperTradingAPI.ts';
 
 interface PositionsScreenProps {
   paperTradingApi: PaperTradingAPI;
@@ -98,6 +98,7 @@ export function PositionsScreen({ paperTradingApi, onBack }: PositionsScreenProp
   return (
     <ScrollView 
       style={styles.container}
+      contentContainerStyle={{ paddingBottom: 50 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>

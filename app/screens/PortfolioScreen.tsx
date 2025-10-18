@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, StatusBadge } from '../../lib/ui';
-import { FyersAPI } from '../../lib/fyersApi';
-import { Position } from '../../lib/strategies/BaseStrategy';
+import { Text, Card, StatusBadge } from '../../lib/ui.tsx';
+import { FyersAPI } from '../../lib/fyersApi.ts';
+import { Position } from '../../lib/strategies/BaseStrategy.ts';
 
 interface PortfolioScreenProps {
   fyersApi: FyersAPI;

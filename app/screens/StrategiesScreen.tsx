@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Button, Switch } from '../../lib/ui';
-import { StrategyManager } from '../../lib/StrategyManager';
-import { BaseStrategy } from '../../lib/strategies/BaseStrategy';
+import { Text, Card, Button, Switch } from '../../lib/ui.tsx';
+import { StrategyManager } from '../../lib/StrategyManager.ts';
+import { BaseStrategy } from '../../lib/strategies/BaseStrategy.ts';
 import { StrategyConfigScreen } from './StrategyConfigScreen';
 import { StrategyDetailsScreen } from './StrategyDetailsScreen';
 import { StrategyBrowserScreen } from './StrategyBrowserScreen';
@@ -83,7 +83,7 @@ export function StrategiesScreen({ strategyManager, fyersApi }: StrategiesScreen
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
       <View style={styles.header}>
         <Text style={styles.title}>Trading Strategies</Text>
         <Text style={styles.subtitle}>{strategies.length} available</Text>

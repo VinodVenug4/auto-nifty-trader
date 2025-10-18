@@ -1,4 +1,4 @@
-import { StorageManager } from './storage';
+import { StorageManager } from './storage.ts';
 
 // Paper trading simulation with real market data
 export interface PaperTrade {

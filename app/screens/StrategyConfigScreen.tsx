@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Text, Card, Button, TextInput, Dropdown } from '../../lib/ui';
-import { BaseStrategy } from '../../lib/strategies/BaseStrategy';
-import { FyersAPI } from '../../lib/fyersApi';
+import { Text, Card, Button, TextInput, Dropdown } from '../../lib/ui.tsx';
+import { BaseStrategy } from '../../lib/strategies/BaseStrategy.ts';
+import { FyersAPI } from '../../lib/fyersApi.ts';
 
 interface StrategyConfigScreenProps {
   strategy: BaseStrategy;
@@ -168,7 +168,7 @@ export function StrategyConfigScreen({ strategy, onSave, onBack, fyersApi }: Str
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 50 }}>
       <View style={styles.header}>
         <Button title="← Back" onPress={onBack} variant="ghost" />
         <Text style={styles.title}>{strategy.getName()}</Text>

@@ -1,4 +1,4 @@
-import { BaseStrategy, StrategyConfig, TradeSignal, Position } from './BaseStrategy';
+import { BaseStrategy, StrategyConfig, TradeSignal, Position } from './BaseStrategy.ts';
 
 export class StraddleStrategy extends BaseStrategy {
   constructor() {

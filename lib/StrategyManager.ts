@@ -1,9 +1,9 @@
-import { BaseStrategy, TradeSignal } from './strategies/BaseStrategy';
-import { StraddleStrategy } from './strategies/StraddleStrategy';
-import { FyersAPI } from './fyersApi';
-import { logger } from './logger';
-import { SecurityManager } from './security';
-import { StorageManager } from './storage';
+import { BaseStrategy, TradeSignal } from './strategies/BaseStrategy.ts';
+import { StraddleStrategy } from './strategies/StraddleStrategy.ts';
+import { FyersAPI } from './fyersApi.ts';
+import { logger } from './logger.ts';
+import { SecurityManager } from './security.ts';
+import { StorageManager } from './storage.ts';
 
 export class StrategyManager {
   private strategies: Map<string, BaseStrategy> = new Map();

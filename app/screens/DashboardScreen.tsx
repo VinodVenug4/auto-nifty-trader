@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Card, Button, StatusBadge } from '../../lib/ui';
-import { StrategyManager } from '../../lib/StrategyManager';
-import { FyersAPI } from '../../lib/fyersApi';
+import { Text, Card, Button, StatusBadge } from '../../lib/ui.tsx';
+import { StrategyManager } from '../../lib/StrategyManager.ts';
+import { FyersAPI } from '../../lib/fyersApi.ts';
 
 interface DashboardScreenProps {
   fyersApi: FyersAPI;
@@ -31,7 +31,17 @@ export function DashboardScreen({ fyersApi, strategyManager, onNavigate, isPaper
 
   const loadDashboardData = async () => {
     try {
-      const price = await fyersApi.getNiftyPrice();
+      // Only get real data if authenticated, otherwise show 0
+      let price = 0;
+      console.log('FyersAPI authenticated:', fyersApi.isAuthenticated());
+      
+      if (fyersApi.isAuthenticated()) {
+        console.log('Fetching NIFTY price...');
+        price = await fyersApi.getNiftyPrice();
+        console.log('NIFTY price received:', price);
+      } else {
+        console.log('Not authenticated, showing 0');
+      }
       setNiftyPrice(price);
       
       const strategies = strategyManager.getStrategies();
@@ -43,6 +53,10 @@ export function DashboardScreen({ fyersApi, strategyManager, onNavigate, isPaper
       setTotalPnL(pnl);
     } catch (error) {
       console.error('Dashboard data load failed:', error);
+      // Show 0 values when there's an error
+      setNiftyPrice(0);
+      setActiveStrategies(0);
+      setTotalPnL(0);
     }
   };
 

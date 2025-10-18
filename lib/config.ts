@@ -45,8 +45,18 @@ export class SecureConfig {
     };
   }
 
-  hasCredentials(): boolean {
-    return !!(this.appId && this.secretKey);
+  async hasCredentials(): Promise<boolean> {
+    if (this.appId && this.secretKey) {
+      return true;
+    }
+    
+    try {
+      const appId = await SecureStore.getItemAsync('fyers_app_id');
+      const secretKey = await SecureStore.getItemAsync('fyers_secret_key');
+      return !!(appId && secretKey);
+    } catch (error) {
+      return false;
+    }
   }
 
   clearCredentials() {

@@ -67,11 +67,11 @@ export class SecurityManager {
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
 
       if (!hasHardware || !isEnrolled) {
-        // Fallback to simple confirmation
+        // Fallback to simple confirmation for devices without biometrics
         return new Promise((resolve) => {
           Alert.alert(
             'Authentication Required',
-            'Please confirm to access the app',
+            'Biometric authentication not available. Tap Confirm to continue.',
             [
               { text: 'Cancel', onPress: () => resolve(false) },
               { text: 'Confirm', onPress: () => resolve(true) }
@@ -82,14 +82,25 @@ export class SecurityManager {
 
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate to access Auto NIFTY Trader',
-        fallbackLabel: 'Use PIN',
-        cancelLabel: 'Cancel'
+        fallbackLabel: 'Use Device PIN',
+        cancelLabel: 'Cancel',
+        disableDeviceFallback: false
       });
 
       return result.success;
     } catch (error) {
       logger.error('Authentication failed');
-      return false;
+      // If authentication fails, show fallback
+      return new Promise((resolve) => {
+        Alert.alert(
+          'Authentication Error',
+          'Biometric authentication failed. Tap Confirm to continue.',
+          [
+            { text: 'Cancel', onPress: () => resolve(false) },
+            { text: 'Confirm', onPress: () => resolve(true) }
+          ]
+        );
+      });
     }
   }
 

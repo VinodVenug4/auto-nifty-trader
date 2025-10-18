@@ -9,9 +9,10 @@ import { StrategyBrowserScreen } from './StrategyBrowserScreen';
 
 interface StrategiesScreenProps {
   strategyManager: StrategyManager;
+  fyersApi?: any;
 }
 
-export function StrategiesScreen({ strategyManager }: StrategiesScreenProps) {
+export function StrategiesScreen({ strategyManager, fyersApi }: StrategiesScreenProps) {
   const [strategies, setStrategies] = useState<BaseStrategy[]>([]);
   const [selectedStrategy, setSelectedStrategy] = useState<BaseStrategy | null>(null);
   const [showConfig, setShowConfig] = useState(false);
@@ -52,6 +53,7 @@ export function StrategiesScreen({ strategyManager }: StrategiesScreenProps) {
           setShowConfig(false);
           setSelectedStrategy(null);
         }}
+        fyersApi={fyersApi}
       />
     );
   }

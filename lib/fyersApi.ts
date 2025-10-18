@@ -151,7 +151,7 @@ export class FyersAPI {
   }
 
   // Get option chain data
-  async getOptionChain(symbol: string = 'NSE:NIFTY50-INDEX', strikeCount: number = 5): Promise<any> {
+  async getOptionChain(symbol: string = 'NSE:NIFTY50-INDEX', strikeCount: number = 10): Promise<any> {
     if (!this.accessToken) throw new Error('Not authenticated');
     
     try {
@@ -164,14 +164,24 @@ export class FyersAPI {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.s === 'ok') {
+        if (data.s === 'ok' && data.data) {
+          // Get underlying price from NIFTY index quote
+          let underlyingPrice = 0;
+          try {
+            const niftyQuote = await this.getQuote('NSE:NIFTY50-INDEX');
+            underlyingPrice = niftyQuote?.ltp || 0;
+          } catch (e) {
+            // Fallback to option chain data if quote fails
+            underlyingPrice = data.data.optionsChain?.find((item: any) => item.option_type === '')?.ltp || 0;
+          }
+          
           return {
-            callOi: data.data.callOi,
-            putOi: data.data.putOi,
-            expiryData: data.data.expiryData,
-            indiaVix: data.data.indiavixData,
-            optionsChain: data.data.optionsChain,
-            underlyingPrice: data.data.optionsChain.find((item: any) => item.option_type === '')?.ltp || 0
+            callOi: data.data.callOi || 0,
+            putOi: data.data.putOi || 0,
+            expiryData: data.data.expiryData || [],
+            indiaVix: data.data.indiavixData?.ltp || 0,
+            optionsChain: data.data.optionsChain || [],
+            underlyingPrice: underlyingPrice
           };
         }
       }

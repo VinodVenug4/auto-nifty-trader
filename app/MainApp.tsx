@@ -13,9 +13,10 @@ import { OrderHistoryScreen } from './screens/OrderHistoryScreen';
 import { RealPortfolioScreen } from './screens/RealPortfolioScreen';
 import { RealOrderHistoryScreen } from './screens/RealOrderHistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { OptionChainScreen } from './screens/OptionChainScreen';
 import { StorageManager } from '../lib/storage';
 
-type Screen = 'dashboard' | 'strategies' | 'portfolio' | 'positions' | 'orders' | 'settings';
+type Screen = 'dashboard' | 'strategies' | 'portfolio' | 'positions' | 'orders' | 'options' | 'settings';
 
 interface MainAppProps {
   onLogout: () => void;
@@ -101,7 +102,7 @@ export function MainApp({ onLogout }: MainAppProps) {
           onNavigate={handleScreenChange}
         />;
       case 'strategies':
-        return <StrategiesScreen strategyManager={strategyManager} />;
+        return <StrategiesScreen strategyManager={strategyManager} fyersApi={fyersApi} />;
       case 'portfolio':
         return <PortfolioScreen fyersApi={fyersApi} />;
       case 'positions':
@@ -112,6 +113,8 @@ export function MainApp({ onLogout }: MainAppProps) {
         return isPaperMode
           ? <OrderHistoryScreen paperTradingApi={paperTradingApi} onBack={() => handleScreenChange('dashboard')} />
           : <RealOrderHistoryScreen fyersApi={fyersApi} onBack={() => handleScreenChange('dashboard')} />;
+      case 'options':
+        return <OptionChainScreen fyersApi={fyersApi} onBack={() => handleScreenChange('dashboard')} />;
       case 'settings':
         return (
           <SettingsScreen 
@@ -149,6 +152,12 @@ export function MainApp({ onLogout }: MainAppProps) {
           title={isPaperMode ? 'Positions' : 'Portfolio'}
           onPress={() => handleScreenChange('positions')}
           variant={currentScreen === 'positions' ? 'primary' : 'ghost'}
+          style={styles.navButton}
+        />
+        <Button
+          title="Options"
+          onPress={() => handleScreenChange('options')}
+          variant={currentScreen === 'options' ? 'primary' : 'ghost'}
           style={styles.navButton}
         />
         <Button
@@ -190,6 +199,6 @@ const styles = StyleSheet.create({
   },
   navButton: {
     flex: 1,
-    marginHorizontal: 2,
+    marginHorizontal: 1,
   },
 });

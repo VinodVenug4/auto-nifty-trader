@@ -12,9 +12,10 @@ export class StraddleStrategy extends BaseStrategy {
         exitTime: '15:00',
         quantity: 50,
         atr: 150,
-        atrMultiplier: 1.5,
+        atrMultiplier: 1,
         maxLoss: 5000,
-        targetProfit: 3000
+        targetProfit: 3000,
+        selectedExpiry: 'monthly' // 'monthly' or specific expiry from API
       }
     };
     super(config);
@@ -38,29 +39,56 @@ export class StraddleStrategy extends BaseStrategy {
     
     if (!this.isEntryTime(currentTime)) return signals;
     
-    // Calculate ATM strike based on NIFTY price
-    const atmStrike = Math.round(niftyPrice / 50) * 50;
-    const expiry = this.getCurrentExpiry();
+    // Calculate reference strike (rounded current price to nearest 50)
+    const referenceStrike = Math.round(niftyPrice / 50) * 50;
     const atr = this.config.parameters.atr || 150;
+    const atrMultiplier = this.config.parameters.atrMultiplier || 1;
+    const adjustedAtr = Math.round((atr * atrMultiplier) / 50) * 50; // Apply multiplier and round to nearest 50
     
-    // Use ATR for strike selection (can be ATM or ATM +/- ATR based on strategy)
-    const selectedStrike = atmStrike; // For straddle, use ATM
+    // Calculate CE and PE strikes
+    const ceStrike = referenceStrike + adjustedAtr;
+    const peStrike = referenceStrike - adjustedAtr;
     
-    // Entry signals for straddle
+    // Construct symbols using Fyers format
+    const selectedExpiry = this.config.parameters.selectedExpiry;
+    let expiryStr = '';
+    
+    if (selectedExpiry && selectedExpiry !== 'monthly') {
+      const [day, month, year] = selectedExpiry.split('-');
+      const monthCodes = ['', 'J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+      const monthCode = monthCodes[parseInt(month)] || 'O';
+      expiryStr = `${year.slice(2)}${monthCode}${day}`;
+    } else {
+      // Default to current month expiry
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const lastThursday = new Date(year, month, 0);
+      lastThursday.setDate(lastThursday.getDate() - ((lastThursday.getDay() + 3) % 7));
+      const day = lastThursday.getDate().toString().padStart(2, '0');
+      const monthCodes = ['', 'J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+      const monthCode = monthCodes[month] || 'O';
+      expiryStr = `${year.toString().slice(2)}${monthCode}${day}`;
+    }
+    
+    const ceSymbol = `NSE:NIFTY${expiryStr}${ceStrike}CE`;
+    const peSymbol = `NSE:NIFTY${expiryStr}${peStrike}PE`;
+    
+    // Entry signals for ATR-based strangle
     signals.push({
       action: 'BUY',
-      symbol: `NSE:NIFTY${expiry}${selectedStrike}CE`,
+      symbol: ceSymbol,
       quantity: this.config.parameters.quantity,
       orderType: 'MARKET',
-      reason: `Straddle entry - CE leg at ${selectedStrike} (ATR: ${atr})`
+      reason: `ATR Strangle - CE at ${ceStrike} (Ref: ${referenceStrike}, ATR: ${atr}x${atrMultiplier}=${adjustedAtr})`
     });
     
     signals.push({
       action: 'BUY',
-      symbol: `NSE:NIFTY${expiry}${selectedStrike}PE`,
+      symbol: peSymbol,
       quantity: this.config.parameters.quantity,
       orderType: 'MARKET',
-      reason: `Straddle entry - PE leg at ${selectedStrike} (ATR: ${atr})`
+      reason: `ATR Strangle - PE at ${peStrike} (Ref: ${referenceStrike}, ATR: ${atr}x${atrMultiplier}=${adjustedAtr})`
     });
     
     return signals;
@@ -78,7 +106,7 @@ export class StraddleStrategy extends BaseStrategy {
   }
 
   getRequiredData(): string[] {
-    return ['NIFTY50-INDEX', 'ATR', 'TIME'];
+    return ['NIFTY50-INDEX', 'ATR', 'TIME', 'TRADING_API'];
   }
 
   validateConfig(): boolean {
@@ -94,10 +122,54 @@ export class StraddleStrategy extends BaseStrategy {
     return currentTime === this.config.parameters.exitTime;
   }
 
-  private getCurrentExpiry(): string {
+  private async getSelectedExpiry(tradingApi: any): Promise<string> {
+    const selectedExpiry = this.config.parameters.selectedExpiry;
+    
+    if (selectedExpiry === 'monthly') {
+      return this.getMonthlyExpiry();
+    }
+    
+    // Get available expiries from option chain API
+    try {
+      const optionChain = await tradingApi.getOptionChain('NSE:NIFTY50-INDEX', 5);
+      if (optionChain && optionChain.expiryData && optionChain.expiryData.length > 0) {
+        // If specific expiry is selected, find it in available expiries
+        const availableExpiries = optionChain.expiryData.map((exp: any) => exp.date);
+        if (availableExpiries.includes(selectedExpiry)) {
+          // Convert DD-MM-YYYY to YYMMDD format
+          const [day, month, year] = selectedExpiry.split('-');
+          return year.slice(2) + month + day;
+        }
+        
+        // Default to monthly expiry if selected expiry not found
+        return this.getMonthlyExpiry();
+      }
+    } catch (error) {
+      console.error('Failed to get expiry from option chain:', error);
+    }
+    
+    // Fallback to monthly expiry
+    return this.getMonthlyExpiry();
+  }
+  
+  private getMonthlyExpiry(): string {
     const today = new Date();
-    const thursday = new Date(today);
-    thursday.setDate(today.getDate() + (4 - today.getDay()));
-    return thursday.toISOString().slice(2, 10).replace(/-/g, '');
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    // Get last Thursday of current month
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const lastThursday = new Date(lastDay);
+    lastThursday.setDate(lastDay.getDate() - ((lastDay.getDay() + 3) % 7));
+    
+    // If last Thursday has passed, get next month's last Thursday
+    if (lastThursday < today) {
+      const nextMonth = new Date(currentYear, currentMonth + 2, 0);
+      const nextLastThursday = new Date(nextMonth);
+      nextLastThursday.setDate(nextMonth.getDate() - ((nextMonth.getDay() + 3) % 7));
+      return nextLastThursday.toISOString().slice(2, 10).replace(/-/g, '');
+    }
+    
+    return lastThursday.toISOString().slice(2, 10).replace(/-/g, '');
   }
 }

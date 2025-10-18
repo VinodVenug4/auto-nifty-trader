@@ -105,6 +105,52 @@ export const Switch = ({ value, onValueChange, label }: any) => {
   );
 };
 
+export const Dropdown = ({ label, value, options, onSelect, style }: any) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  
+  return (
+    <View style={{ flex: 1 }}>
+      {label && <MyText style={{ marginBottom: 6, opacity: 0.8 }}>{label}</MyText>}
+      <Pressable
+        onPress={() => setIsOpen(!isOpen)}
+        style={[styles.input, { justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }, style]}
+      >
+        <MyText>{value || 'Select...'}</MyText>
+        <MyText>{isOpen ? '▲' : '▼'}</MyText>
+      </Pressable>
+      {isOpen && (
+        <View style={{ 
+          backgroundColor: '#10151b', 
+          borderRadius: 10, 
+          borderWidth: 1, 
+          borderColor: '#26313e', 
+          maxHeight: 200,
+          position: 'absolute',
+          bottom: '100%',
+          marginBottom: 4,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          elevation: 5
+        }}>
+          {options.map((option: any, index: number) => (
+            <Pressable
+              key={index}
+              onPress={() => {
+                onSelect(option.value);
+                setIsOpen(false);
+              }}
+              style={{ padding: 12, borderBottomWidth: index < options.length - 1 ? 1 : 0, borderBottomColor: '#26313e' }}
+            >
+              <MyText>{option.label}</MyText>
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
 export const StatusBadge = ({ status, text }: any) => {
   const getColor = () => {
     switch (status) {

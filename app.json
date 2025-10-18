@@ -19,7 +19,8 @@
             "DEFAULT"
           ]
         }
-      ]
+      ],
+      "package": "com.vinodvenu.autoniftytrader"
     },
     "extra": {
       "eas": {

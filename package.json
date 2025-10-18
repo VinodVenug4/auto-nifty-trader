@@ -1,0 +1,66 @@
+{
+  "name": "auto-nifty-trader",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "dayjs": "1.11.13",
+    "expo": "~54.0.2",
+    "expo-auth-session": "~7.0.8",
+    "expo-av": "~16.0.7",
+    "expo-constants": "~18.0.9",
+    "expo-file-system": "~19.0.17",
+    "expo-linking": "~8.0.8",
+    "expo-notifications": "~0.32.12",
+    "expo-router": "^6.0.12",
+    "expo-secure-store": "~15.0.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native": "^0.81.4",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "^0.21.0",
+    "react-native-worklets": "0.5.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@babel/plugin-transform-typescript": "^7.25.2",
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "~19.1.7",
+    "babel-preset-expo": "~54.0.0",
+    "metro-react-native-babel-transformer": "^0.77.0",
+    "typescript": "^5.5.3"
+  },
+  "expo": {
+    "name": "Auto NIFTY Trader",
+    "slug": "auto-nifty-trader",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#2e7d32"
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "scheme": "autoniftytrader",
+    "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "autoniftytrader"
+            },
+            {
+              "scheme": "https",
+              "host": "myapp.fyers.in"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "35c89451-9090-4712-b4a5-f034e3f59505"
+      }
+    }
+  },
+  "plugins": [
+    "expo-secure-store"
+  ]
+}
